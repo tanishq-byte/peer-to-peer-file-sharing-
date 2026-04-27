@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>P2P Project | Home</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ff9d;
+            --bg: #080c12;
+            --surface: #0e1520;
+            --text: #e2eaf4;
+            --muted: #526070;
+            --border: rgba(0, 255, 157, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(rgba(0, 255, 157, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 157, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(14, 21, 32, 0.8);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+
+        .nav-logo span {
+            color: var(--primary);
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links .cta-nav {
+            color: var(--primary);
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            border-radius: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .nav-links .cta-nav:hover {
+            background: var(--primary);
+            color: #080c12;
+        }
+
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            padding: 60px 20px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            border: 1px solid var(--border);
+            background: rgba(0, 255, 157, 0.05);
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            margin: 0 0 20px;
+            letter-spacing: -2px;
+            line-height: 1.05;
+        }
+
+        .hero h1 span {
+            color: var(--primary);
+            text-shadow: 0 0 30px rgba(0, 255, 157, 0.3);
+        }
+
+        .hero p {
+            max-width: 580px;
+            color: var(--muted);
+            font-size: 1.15rem;
+            line-height: 1.7;
+            margin: 0 0 40px;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cta-btn {
+            background: var(--primary);
+            color: #080c12;
+            padding: 14px 36px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.4);
+        }
+
+        .cta-secondary {
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 14px 36px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: border-color 0.3s, color 0.3s;
+            display: inline-block;
+        }
+
+        .cta-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .stats {
+            display: flex;
+            gap: 60px;
+            margin-top: 70px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            padding: 80px 40px;
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .f-card {
+            background: var(--surface);
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .f-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+        }
+
+        .f-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(0, 255, 157, 0.1);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+
+        .f-card h3 {
+            color: var(--primary);
+            margin: 0 0 12px;
+            font-size: 1.1rem;
+        }
+
+        .f-card p {
+            color: var(--muted);
+            line-height: 1.7;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        footer span {
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="nav-logo">Contributor <span>Hub</span></div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/dashboard" class="cta-nav">Dashboard →</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-badge">● NODE ACTIVE ON PORT {{ port }}</div>
+        <h1>Decentralized <span>P2P</span><br>File Sharing</h1>
+        <p>A collaborative project network where every peer is a contributor. No central servers, no downtime — just
+            pure, distributed data sharing across a mesh network.</p>
+        <div class="hero-btns">
+            <a href="/dashboard" class="cta-btn">Launch Dashboard</a>
+            <a href="#features" class="cta-secondary">Learn More</a>
+        </div>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-num">P2P</div>
+                <div class="stat-label">Architecture</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">TCP</div>
+                <div class="stat-label">Direct Transfer</div>
+            </div>
+            <div class="stat">
+                <div class="stat-num">∞</div>
+                <div class="stat-label">No Central Server</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="f-card">
+            <div class="f-icon">🔍</div>
+            <h3>Recursive Discovery</h3>
+            <p>Our network uses a custom "visited-list" protocol to hop across nodes, finding files even on peers you
+                aren't directly connected to.</p>
+        </div>
+        <div class="f-card">
+            <div class="f-icon">🌐</div>
+            <h3>Mesh Topology</h3>
+            <p>Every node creates a real-time map of the network, allowing contributors to visualize the entire
+                ecosystem of shared files.</p>
+        </div>
+        <div class="f-card">
+            <div class="f-icon">⚡</div>
+            <h3>Direct Transfer</h3>
+            <p>While searches are shared, file transfers are handled via direct TCP streams to ensure maximum speed and
+                privacy.</p>
+        </div>
+    </section>
+
+    <footer>
+        Running on node <span>:{{ port }}</span> &mdash; Contributor Hub P2P Network
+    </footer>
+</body>
+
+</html>

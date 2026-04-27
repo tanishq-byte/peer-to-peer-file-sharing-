@@ -1,0 +1,477 @@
+{
+  "name": "ByteShift – Free AI Faceless YouTube Shorts (Groq + Pexels + ElevenLabs)",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "ByteShift Shorts Generator",
+        "formDescription": "Generate a free AI faceless YouTube Short end-to-end",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Topic",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "e.g. Top 5 AI Tools of 2025"
+            },
+            {
+              "fieldLabel": "Video Category",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "Tech & AI" },
+                  { "option": "Motivation" },
+                  { "option": "Facts" },
+                  { "option": "Finance" },
+                  { "option": "History" }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Video Duration",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  { "option": "30 seconds" },
+                  { "option": "45 seconds" },
+                  { "option": "60 seconds" }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Your Email",
+              "fieldType": "email",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "onReceived",
+        "responseMessage": "✅ Generating your Short! Check your email in a few minutes."
+      },
+      "id": "node-form-trigger",
+      "name": "User Input Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [100, 300],
+      "webhookId": "byteshift-free-trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "topic",
+              "value": "={{ $json['Topic'] }}",
+              "type": "string"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json['Video Category'] }}",
+              "type": "string"
+            },
+            {
+              "name": "duration",
+              "value": "={{ $json['Video Duration'] }}",
+              "type": "string"
+            },
+            {
+              "name": "userEmail",
+              "value": "={{ $json['Your Email'] }}",
+              "type": "string"
+            },
+            {
+              "name": "groqKey",
+              "value": "YOUR_GROQ_API_KEY",
+              "type": "string"
+            },
+            {
+              "name": "elevenLabsKey",
+              "value": "YOUR_ELEVENLABS_API_KEY",
+              "type": "string"
+            },
+            {
+              "name": "pexelsKey",
+              "value": "YOUR_PEXELS_API_KEY",
+              "type": "string"
+            },
+            {
+              "name": "json2videoKey",
+              "value": "YOUR_JSON2VIDEO_API_KEY",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "node-set-vars",
+      "name": "Set API Keys",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [340, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.groqKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an expert YouTube Shorts scriptwriter for faceless channels. Write punchy, hook-driven scripts optimized for maximum retention. Structure: 1) Powerful 3-second hook that stops the scroll, 2) Fast-paced engaging body, 3) Strong CTA at the end. Return ONLY the spoken script — no stage directions, no labels, no formatting, no asterisks. Pure spoken words only.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Write a {{ $json.duration }} YouTube Shorts script for a faceless {{ $json.category }} channel about: {{ $json.topic }}. Make it punchy and engaging.\"\n    }\n  ],\n  \"temperature\": 0.8,\n  \"max_tokens\": 400\n}",
+        "options": {}
+      },
+      "id": "node-groq-script",
+      "name": "Generate Script (Groq)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [580, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst script = response.choices?.[0]?.message?.content?.trim() || 'Script generation failed';\nconst vars = $('Set API Keys').first().json;\nreturn [{\n  json: {\n    script,\n    topic: vars.topic,\n    category: vars.category,\n    duration: vars.duration,\n    userEmail: vars.userEmail,\n    groqKey: vars.groqKey,\n    elevenLabsKey: vars.elevenLabsKey,\n    pexelsKey: vars.pexelsKey,\n    json2videoKey: vars.json2videoKey\n  }\n}];"
+      },
+      "id": "node-parse-script",
+      "name": "Parse Script",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [820, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.groqKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a video director. Given a YouTube Shorts script, generate 3 short Pexels stock video search keywords that visually match the script content. Return ONLY a valid JSON array of 3 short keyword strings (1-3 words each). No explanation. No markdown. Example: [\\\"technology future\\\", \\\"coding laptop\\\", \\\"ai robot\\\"]\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Script: {{ $json.script }}\\n\\nGive me 3 Pexels search keywords for this {{ $json.category }} video.\"\n    }\n  ],\n  \"temperature\": 0.5,\n  \"max_tokens\": 100\n}",
+        "options": {}
+      },
+      "id": "node-groq-keywords",
+      "name": "Generate Video Keywords (Groq)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1060, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "={{ $json.elevenLabsKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "audio/mpeg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": \"{{ $json.script }}\",\n  \"model_id\": \"eleven_multilingual_v2\",\n  \"voice_settings\": {\n    \"stability\": 0.5,\n    \"similarity_boost\": 0.75\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "node-elevenlabs",
+      "name": "Generate Voiceover (ElevenLabs Free)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1060, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst scriptData = $('Parse Script').first().json;\nlet keywords;\ntry {\n  const raw = response.choices?.[0]?.message?.content?.trim() || '[]';\n  const cleaned = raw.replace(/```json|```/g, '').trim();\n  keywords = JSON.parse(cleaned);\n  if (!Array.isArray(keywords)) throw new Error('not array');\n} catch(e) {\n  keywords = [scriptData.category, 'technology', 'future'];\n}\nreturn [{\n  json: {\n    keywords,\n    searchQuery: keywords[0] || scriptData.category,\n    script: scriptData.script,\n    topic: scriptData.topic,\n    category: scriptData.category,\n    duration: scriptData.duration,\n    userEmail: scriptData.userEmail,\n    pexelsKey: scriptData.pexelsKey,\n    json2videoKey: scriptData.json2videoKey,\n    elevenLabsKey: scriptData.elevenLabsKey\n  }\n}];"
+      },
+      "id": "node-parse-keywords",
+      "name": "Parse Keywords",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1300, 480]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.pexels.com/videos/search?query={{ $json.searchQuery }}&per_page=3&orientation=portrait",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.pexelsKey }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-pexels",
+      "name": "Fetch Stock Videos (Pexels Free)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1540, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "const pexelsData = $input.first().json;\nconst keywordData = $('Parse Keywords').first().json;\nconst scriptData = $('Parse Script').first().json;\n\n// Extract video URLs from Pexels\nconst videos = pexelsData.videos || [];\nconst videoUrls = videos.map(v => {\n  const files = v.video_files || [];\n  // Get HD portrait file\n  const hdFile = files.find(f => f.quality === 'hd' && f.height > f.width) ||\n                 files.find(f => f.height > f.width) ||\n                 files[0];\n  return hdFile?.link || '';\n}).filter(url => url !== '');\n\n// Fallback URLs if Pexels fails\nconst fallbackUrls = [\n  'https://www.pexels.com/download/video/3129671/',\n  'https://www.pexels.com/download/video/3550341/',\n  'https://www.pexels.com/download/video/4065898/'\n];\n\nconst finalUrls = videoUrls.length > 0 ? videoUrls : fallbackUrls;\n\nreturn [{\n  json: {\n    videoUrl1: finalUrls[0] || fallbackUrls[0],\n    videoUrl2: finalUrls[1] || fallbackUrls[1],\n    videoUrl3: finalUrls[2] || fallbackUrls[2],\n    script: scriptData.script,\n    topic: scriptData.topic,\n    category: scriptData.category,\n    duration: scriptData.duration,\n    userEmail: scriptData.userEmail,\n    json2videoKey: keywordData.json2videoKey\n  }\n}];"
+      },
+      "id": "node-parse-pexels",
+      "name": "Parse Pexels Videos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.json2video.com/v2/movies",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $('Parse Pexels Videos').item.json.json2videoKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"resolution\": \"instagram-story\",\n  \"quality\": \"high\",\n  \"scenes\": [\n    {\n      \"comment\": \"Scene 1\",\n      \"elements\": [\n        {\n          \"type\": \"video\",\n          \"src\": \"{{ $('Parse Pexels Videos').item.json.videoUrl1 }}\",\n          \"duration\": 20,\n          \"volume\": 0\n        },\n        {\n          \"type\": \"audio\",\n          \"src\": \"{{ $('Generate Voiceover (ElevenLabs Free)').item.binary.data.url }}\",\n          \"volume\": 1\n        },\n        {\n          \"type\": \"text\",\n          \"style\": \"007\",\n          \"text\": \"{{ $('Parse Script').item.json.topic }}\",\n          \"duration\": 3,\n          \"start\": 0,\n          \"settings\": {\n            \"font-size\": 45,\n            \"color\": \"#FFFFFF\",\n            \"background-color\": \"#FF0000\",\n            \"text-align\": \"center\"\n          }\n        }\n      ]\n    },\n    {\n      \"comment\": \"Scene 2\",\n      \"elements\": [\n        {\n          \"type\": \"video\",\n          \"src\": \"{{ $('Parse Pexels Videos').item.json.videoUrl2 }}\",\n          \"duration\": 20,\n          \"volume\": 0\n        }\n      ]\n    },\n    {\n      \"comment\": \"Scene 3\",\n      \"elements\": [\n        {\n          \"type\": \"video\",\n          \"src\": \"{{ $('Parse Pexels Videos').item.json.videoUrl3 }}\",\n          \"duration\": 20,\n          \"volume\": 0\n        },\n        {\n          \"type\": \"text\",\n          \"style\": \"007\",\n          \"text\": \"Follow for more!\",\n          \"duration\": 3,\n          \"start\": 17,\n          \"settings\": {\n            \"font-size\": 40,\n            \"color\": \"#FFFFFF\",\n            \"background-color\": \"#FF0000\",\n            \"text-align\": \"center\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "node-json2video",
+      "name": "Assemble Video (JSON2Video)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "amount": 40,
+        "unit": "seconds"
+      },
+      "id": "node-wait1",
+      "name": "Wait 40s (Render)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2020, 300]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.json2video.com/v2/movies?project={{ $('Assemble Video (JSON2Video)').item.json.project }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $('Parse Pexels Videos').item.json.json2videoKey }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-poll",
+      "name": "Poll Video Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2260, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nreturn [{\n  json: {\n    videoReady: data.status === 'done',\n    videoUrl: data.movie?.url || '',\n    status: data.status,\n    project: data.project\n  }\n}];"
+      },
+      "id": "node-check-status",
+      "name": "Check Video Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.videoReady }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ]
+        }
+      },
+      "id": "node-if-ready",
+      "name": "Is Video Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2740, 300]
+    },
+    {
+      "parameters": {
+        "amount": 20,
+        "unit": "seconds"
+      },
+      "id": "node-wait-retry",
+      "name": "Wait 20s Retry",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2740, 520]
+    },
+    {
+      "parameters": {
+        "fromEmail": "tanishqkhetwal63@gmail.com",
+        "toEmail": "={{ $('Parse Script').item.json.userEmail }}",
+        "subject": "=🎬 ByteShift Short Ready: {{ $('Parse Script').item.json.topic }}",
+        "emailType": "html",
+        "html": "=<html>\n<body style=\"font-family: Arial, sans-serif; background: #0f0f0f; color: #fff; padding: 30px; max-width: 600px; margin: 0 auto;\">\n  <div style=\"text-align:center; padding: 20px 0;\">\n    <h1 style=\"color:#ff0000; margin:0;\">🎬 ByteShift</h1>\n    <p style=\"color:#888;\">AI Faceless YouTube Shorts</p>\n  </div>\n  <hr style=\"border-color:#222;\">\n  <h2>Your Short is Ready! 🚀</h2>\n  <table style=\"width:100%; border-collapse:collapse; margin:15px 0;\">\n    <tr><td style=\"padding:8px; color:#888; width:100px;\">Topic</td><td style=\"padding:8px; color:#fff; font-weight:bold;\">{{ $('Parse Script').item.json.topic }}</td></tr>\n    <tr style=\"background:#1a1a1a;\"><td style=\"padding:8px; color:#888;\">Category</td><td style=\"padding:8px; color:#fff;\">{{ $('Parse Script').item.json.category }}</td></tr>\n    <tr><td style=\"padding:8px; color:#888;\">Duration</td><td style=\"padding:8px; color:#fff;\">{{ $('Parse Script').item.json.duration }}</td></tr>\n    <tr style=\"background:#1a1a1a;\"><td style=\"padding:8px; color:#888;\">AI Stack</td><td style=\"padding:8px; color:#00cc88;\">Groq LLaMA 3.3 + ElevenLabs + Pexels + JSON2Video</td></tr>\n  </table>\n  <hr style=\"border-color:#222;\">\n  <h3 style=\"color:#ff0000;\">📜 Script</h3>\n  <div style=\"background:#1a1a1a; padding:15px; border-left:4px solid #ff0000; border-radius:4px; line-height:1.7;\">{{ $('Parse Script').item.json.script }}</div>\n  <hr style=\"border-color:#222;\">\n  <h3 style=\"color:#ff0000;\">🎥 Download Your Video</h3>\n  <div style=\"text-align:center; padding:20px 0;\">\n    <a href=\"{{ $('Check Video Status').item.json.videoUrl }}\" style=\"background:#ff0000; color:white; padding:15px 35px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:16px; display:inline-block;\">▶ Download Short</a>\n  </div>\n  <p style=\"color:#444; font-size:11px; text-align:center;\">ByteShift AI • 100% Free Stack • n8n Automation</p>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "node-email",
+      "name": "Send Email (SMTP)",
+      "type": "n8n-nodes-base.sendEmail",
+      "typeVersion": 2.1,
+      "position": [2980, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "Gmail SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "status",
+              "value": "✅ Done! Video generated and emailed.",
+              "type": "string"
+            },
+            {
+              "name": "videoUrl",
+              "value": "={{ $('Check Video Status').item.json.videoUrl }}",
+              "type": "string"
+            },
+            {
+              "name": "script",
+              "value": "={{ $('Parse Script').item.json.script }}",
+              "type": "string"
+            },
+            {
+              "name": "stack",
+              "value": "Groq LLaMA 3.3 (free) + ElevenLabs (free) + Pexels (free) + JSON2Video",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "node-done",
+      "name": "Done ✅",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [3220, 300]
+    }
+  ],
+  "connections": {
+    "User Input Form": {
+      "main": [[{ "node": "Set API Keys", "type": "main", "index": 0 }]]
+    },
+    "Set API Keys": {
+      "main": [[{ "node": "Generate Script (Groq)", "type": "main", "index": 0 }]]
+    },
+    "Generate Script (Groq)": {
+      "main": [[{ "node": "Parse Script", "type": "main", "index": 0 }]]
+    },
+    "Parse Script": {
+      "main": [[
+        { "node": "Generate Voiceover (ElevenLabs Free)", "type": "main", "index": 0 },
+        { "node": "Generate Video Keywords (Groq)", "type": "main", "index": 0 }
+      ]]
+    },
+    "Generate Voiceover (ElevenLabs Free)": {
+      "main": [[{ "node": "Assemble Video (JSON2Video)", "type": "main", "index": 0 }]]
+    },
+    "Generate Video Keywords (Groq)": {
+      "main": [[{ "node": "Parse Keywords", "type": "main", "index": 0 }]]
+    },
+    "Parse Keywords": {
+      "main": [[{ "node": "Fetch Stock Videos (Pexels Free)", "type": "main", "index": 0 }]]
+    },
+    "Fetch Stock Videos (Pexels Free)": {
+      "main": [[{ "node": "Parse Pexels Videos", "type": "main", "index": 0 }]]
+    },
+    "Parse Pexels Videos": {
+      "main": [[{ "node": "Assemble Video (JSON2Video)", "type": "main", "index": 0 }]]
+    },
+    "Assemble Video (JSON2Video)": {
+      "main": [[{ "node": "Wait 40s (Render)", "type": "main", "index": 0 }]]
+    },
+    "Wait 40s (Render)": {
+      "main": [[{ "node": "Poll Video Status", "type": "main", "index": 0 }]]
+    },
+    "Poll Video Status": {
+      "main": [[{ "node": "Check Video Status", "type": "main", "index": 0 }]]
+    },
+    "Check Video Status": {
+      "main": [[{ "node": "Is Video Ready?", "type": "main", "index": 0 }]]
+    },
+    "Is Video Ready?": {
+      "main": [
+        [{ "node": "Send Email (SMTP)", "type": "main", "index": 0 }],
+        [{ "node": "Wait 20s Retry", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait 20s Retry": {
+      "main": [[{ "node": "Poll Video Status", "type": "main", "index": 0 }]]
+    },
+    "Send Email (SMTP)": {
+      "main": [[{ "node": "Done ✅", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": ["ByteShift", "Free", "Groq", "Pexels", "ElevenLabs", "YouTube Shorts"],
+  "triggerCount": 1,
+  "updatedAt": "2026-03-20T00:00:00.000Z",
+  "versionId": "byteshift-free-v1"
+}
